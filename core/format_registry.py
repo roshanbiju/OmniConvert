@@ -1,29 +1,18 @@
-IMAGE_FORMATS = {
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".webp",
-    ".bmp",
-    ".tiff"
-}
+IMPORTERS = {}
+EXPORTERS = {}
 
-AUDIO_FORMATS = {
-    ".mp3",
-    ".wav",
-    ".flac",
-    ".ogg"
-}
 
-VIDEO_FORMATS = {
-    ".mp4",
-    ".mkv",
-    ".avi",
-    ".mov"
-}
+def register_importer(extension, handler):
+    IMPORTERS[extension.lower()] = handler
 
-DOCUMENT_FORMATS = {
-    ".pdf",
-    ".txt",
-    ".docx",
-    ".odt"
-}
+
+def register_exporter(extension, handler):
+    EXPORTERS[extension.lower()] = handler
+
+
+def get_importer(extension):
+    return IMPORTERS.get(extension.lower())
+
+
+def get_exporter(extension):
+    return EXPORTERS.get(extension.lower())

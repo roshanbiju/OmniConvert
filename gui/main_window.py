@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -9,9 +11,7 @@ from PySide6.QtWidgets import (
     QMessageBox
 )
 
-from pathlib import Path
-
-from converters.image_converter import ImageConverter
+from core.conversion_manager import ConversionManager
 
 
 class MainWindow(QMainWindow):
@@ -35,27 +35,15 @@ class MainWindow(QMainWindow):
             font-weight: bold;
         """)
 
-        self.file_label = QLabel(
-            "No file selected"
-        )
+        self.file_label = QLabel("No file selected")
 
-        self.select_button = QPushButton(
-            "Select File"
-        )
-
-        self.select_button.clicked.connect(
-            self.select_file
-        )
+        self.select_button = QPushButton("Select File")
+        self.select_button.clicked.connect(self.select_file)
 
         self.output_combo = QComboBox()
 
-        self.convert_button = QPushButton(
-            "Convert"
-        )
-
-        self.convert_button.clicked.connect(
-            self.convert_file
-        )
+        self.convert_button = QPushButton("Convert")
+        self.convert_button.clicked.connect(self.convert_file)
 
         layout.addWidget(title)
         layout.addWidget(self.file_label)
@@ -76,45 +64,52 @@ class MainWindow(QMainWindow):
             return
 
         self.current_file = filename
-
         self.file_label.setText(filename)
 
         ext = Path(filename).suffix.lower()
 
         self.output_combo.clear()
 
-        if ext == ".png":
-            self.output_combo.addItems(
-                ["jpg", "webp"]
-            )
+        image_targets = {
+            ".png": ["jpg", "webp", "bmp", "tiff"],
+            ".jpg": ["png", "webp", "bmp", "tiff"],
+            ".jpeg": ["png", "webp", "bmp", "tiff"],
+            ".webp": ["png", "jpg", "bmp", "tiff"],
+            ".bmp": ["png", "jpg", "webp", "tiff"],
+            ".tiff": ["png", "jpg", "webp", "bmp"]
+        }
 
-        elif ext == ".jpg":
-            self.output_combo.addItems(
-                ["png", "webp"]
-            )
-
-        elif ext == ".webp":
-            self.output_combo.addItems(
-                ["png", "jpg"]
-            )
+        if ext in image_targets:
+            self.output_combo.addItems(image_targets[ext])
 
     def convert_file(self):
 
         if not self.current_file:
+            QMessageBox.warning(
+                self,
+                "Warning",
+                "Please select a file."
+            )
             return
 
         target = self.output_combo.currentText()
 
-        output = (
-            str(
-                Path(self.current_file)
-                .with_suffix("." + target)
+        if not target:
+            QMessageBox.warning(
+                self,
+                "Warning",
+                "No valid output format."
             )
+            return
+
+        output = str(
+            Path(self.current_file)
+            .with_suffix("." + target)
         )
 
         try:
 
-            ImageConverter.convert(
+            ConversionManager.convert(
                 self.current_file,
                 output
             )

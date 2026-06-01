@@ -1,5 +1,7 @@
 import sys
 
+import plugins.image_plugin
+
 from PySide6.QtWidgets import QApplication
 from gui.main_window import MainWindow
 
